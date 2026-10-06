@@ -1,0 +1,9 @@
+User-Agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /onboarding/
+Disallow: /welcome/
+Disallow: /client/
+
+Sitemap: https://saadmusani.com/sitemap.xml

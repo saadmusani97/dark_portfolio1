@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url>
+<loc>https://saadmusani.com</loc>
+<lastmod>2026-07-11T00:00:00.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>1</priority>
+</url>
+<url>
+<loc>https://saadmusani.com/mentions-legales</loc>
+<lastmod>2025-01-01T00:00:00.000Z</lastmod>
+<changefreq>yearly</changefreq>
+<priority>0.3</priority>
+</url>
+<url>
+<loc>https://saadmusani.com/cgv</loc>
+<lastmod>2025-01-01T00:00:00.000Z</lastmod>
+<changefreq>yearly</changefreq>
+<priority>0.3</priority>
+</url>
+<url>
+<loc>https://saadmusani.com/confidentialite</loc>
+<lastmod>2025-01-01T00:00:00.000Z</lastmod>
+<changefreq>yearly</changefreq>
+<priority>0.3</priority>
+</url>
+</urlset>

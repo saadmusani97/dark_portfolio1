@@ -18,6 +18,8 @@
 
 <script>
 (function() {
+  // PSP only on desktop (>= 768px)
+  if (window.innerWidth < 768) return;
   var TRIES = 0;
   function mount() {
     TRIES++;
@@ -25,7 +27,6 @@
     var hero = document.getElementById('hero');
     if (!hero) { setTimeout(mount, 150); return; }
     if (document.getElementById('pspCanvas')) return;
-
     var ov = document.createElement('div');
     ov.id = 'pspFixed';
     ov.style.cssText = [
@@ -41,7 +42,6 @@
       'gap:0.5rem',
       'pointer-events:auto'
     ].join(';') + ';';
-
     ov.innerHTML = [
       '<div style="position:relative;width:100%;aspect-ratio:16/10;cursor:grab">',
         '<canvas id="pspCanvas" style="display:block;width:100%!important;height:100%!important;border-radius:6px;touch-action:none;"></canvas>',
@@ -52,8 +52,6 @@
         '<a class="psp__railOpen" id="pspRailOpen" href="#" target="_blank" rel="noopener">↗</a>',
       '</div>'
     ].join('');
-
-    // Inject INTO hero section (position:relative parent)
     hero.style.position = 'relative';
     hero.appendChild(ov);
     console.log('[PSP] mounted in hero ✓');

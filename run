@@ -1,0 +1,3 @@
+#!/usr/bin/env zsh
+# Quick run script — starts localhost:3000
+node server.js

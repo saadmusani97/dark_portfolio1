@@ -14,8 +14,8 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 const WORKS = window.SK_WORKS || [];
 const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-// Desktop only — skip on mobile to save resources
-if (window.innerWidth >= 768) {
+// Desktop only — skip entirely on mobile
+if (window.innerWidth < 768) throw new Error('[PSP] mobile skip');
 
 // Wait for canvas to be mounted by the inline script (it may not exist yet)
 function waitForCanvas(cb) {
@@ -724,4 +724,3 @@ function init() {
   }
 }
 
-} // end desktop-only gate

@@ -6,6 +6,7 @@
 
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
@@ -15,7 +16,9 @@ const WORKS = window.SK_WORKS || [];
 const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 // Desktop only — skip entirely on mobile
-if (window.innerWidth < 768) throw new Error('[PSP] mobile skip');
+if (window.innerWidth < 768) {
+  // noop — do not load Three.js or PSP on mobile
+} else {
 
 // Wait for canvas to be mounted by the inline script (it may not exist yet)
 function waitForCanvas(cb) {
@@ -186,7 +189,13 @@ function init() {
     return m;
   }
 
-  new GLTFLoader().load(
+  const dracoLoader = new DRACOLoader();
+  dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+
+  const gltfLoader = new GLTFLoader();
+  gltfLoader.setDRACOLoader(dracoLoader);
+
+  gltfLoader.load(
     'psp/models/psp.glb',
     (gltf) => { setup(gltf.scene); },
     undefined,
@@ -724,3 +733,4 @@ function init() {
   }
 }
 
+} // end desktop-only block

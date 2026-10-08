@@ -42,7 +42,7 @@
       dice.id = 'mobileDice';
       dice.src = '/images/dice.png';
       dice.alt = '';
-      dice.style.cssText = 'position:absolute;top:38%;left:50%;transform:translate(-50%,-50%);width:clamp(220px,65vw,340px);z-index:10;pointer-events:none;opacity:0.92;filter:drop-shadow(0 0 30px rgba(127,227,255,0.15));animation:dicefloat 4s ease-in-out infinite;';
+      dice.style.cssText = 'position:absolute;top:38%;left:50%;transform:translate(-50%,-50%);width:clamp(220px,65vw,340px);z-index:10;pointer-events:none;mix-blend-mode:screen;opacity:0.9;animation:dicefloat 4s ease-in-out infinite;';
       hero.style.position = 'relative';
       hero.appendChild(dice);
       var style = document.createElement('style');

@@ -30,13 +30,47 @@
 
 <script>
 (function() {
-  // PSP only on desktop (>= 768px)
-  if (window.innerWidth < 768) return;
+  var hero = document.getElementById('hero');
+
+  // Mobile: show dice image instead of PSP
+  if (window.innerWidth < 768) {
+    function mountDice() {
+      if (!hero) { setTimeout(mountDice, 150); return; }
+      if (document.getElementById('mobileDice')) return;
+      var dice = document.createElement('img');
+      dice.id = 'mobileDice';
+      dice.src = '/images/dice.png';
+      dice.alt = '';
+      dice.style.cssText = [
+        'position:absolute',
+        'top:38%',
+        'left:50%',
+        'transform:translate(-50%,-50%)',
+        'width:clamp(220px,65vw,340px)',
+        'z-index:10',
+        'pointer-events:none',
+        'opacity:0.92',
+        'filter:drop-shadow(0 0 30px rgba(127,227,255,0.15))',
+        'animation:dicefloat 4s ease-in-out infinite'
+      ].join(';') + ';';
+      hero.style.position = 'relative';
+      hero.appendChild(dice);
+
+      // Gentle float animation
+      var style = document.createElement('style');
+      style.textContent = '@keyframes dicefloat{0%,100%{transform:translate(-50%,-50%) rotate(-4deg)}50%{transform:translate(-50%,-54%) rotate(4deg)}}';
+      document.head.appendChild(style);
+    }
+    window.addEventListener('load', function() { setTimeout(mountDice, 300); });
+    return;
+  }
+
+  // Desktop: PSP
   var TRIES = 0;
   function mount() {
     TRIES++;
     if (TRIES > 100) return;
-    var hero = document.getElementById('hero');
+    if (!hero) { hero = document.getElementById('hero'); }
     if (!hero) { setTimeout(mount, 150); return; }
     if (document.getElementById('pspCanvas')) return;
     var ov = document.createElement('div');
@@ -66,7 +100,7 @@
     ].join('');
     hero.style.position = 'relative';
     hero.appendChild(ov);
-    console.log('[PSP] mounted in hero ✓');
+    console.log('[PSP] mounted ✓');
   }
   window.addEventListener('load', function() { setTimeout(mount, 500); });
 })();

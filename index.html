@@ -30,33 +30,21 @@
 
 <script>
 (function() {
-  var hero = document.getElementById('hero');
+  var isMobile = window.innerWidth < 768;
 
-  // Mobile: show dice image instead of PSP
-  if (window.innerWidth < 768) {
+  if (isMobile) {
+    // Mobile: dice image
     function mountDice() {
+      var hero = document.getElementById('hero');
       if (!hero) { setTimeout(mountDice, 150); return; }
       if (document.getElementById('mobileDice')) return;
       var dice = document.createElement('img');
       dice.id = 'mobileDice';
       dice.src = '/images/dice.png';
       dice.alt = '';
-      dice.style.cssText = [
-        'position:absolute',
-        'top:38%',
-        'left:50%',
-        'transform:translate(-50%,-50%)',
-        'width:clamp(220px,65vw,340px)',
-        'z-index:10',
-        'pointer-events:none',
-        'opacity:0.92',
-        'filter:drop-shadow(0 0 30px rgba(127,227,255,0.15))',
-        'animation:dicefloat 4s ease-in-out infinite'
-      ].join(';') + ';';
+      dice.style.cssText = 'position:absolute;top:38%;left:50%;transform:translate(-50%,-50%);width:clamp(220px,65vw,340px);z-index:10;pointer-events:none;opacity:0.92;filter:drop-shadow(0 0 30px rgba(127,227,255,0.15));animation:dicefloat 4s ease-in-out infinite;';
       hero.style.position = 'relative';
       hero.appendChild(dice);
-
-      // Gentle float animation
       var style = document.createElement('style');
       style.textContent = '@keyframes dicefloat{0%,100%{transform:translate(-50%,-50%) rotate(-4deg)}50%{transform:translate(-50%,-54%) rotate(4deg)}}';
       document.head.appendChild(style);
@@ -70,34 +58,13 @@
   function mount() {
     TRIES++;
     if (TRIES > 100) return;
-    if (!hero) { hero = document.getElementById('hero'); }
+    var hero = document.getElementById('hero');
     if (!hero) { setTimeout(mount, 150); return; }
     if (document.getElementById('pspCanvas')) return;
     var ov = document.createElement('div');
     ov.id = 'pspFixed';
-    ov.style.cssText = [
-      'position:absolute',
-      'top:40%',
-      'left:50%',
-      'transform:translate(-50%,-50%)',
-      'z-index:10',
-      'width:clamp(560px,72vw,1000px)',
-      'display:flex',
-      'flex-direction:column',
-      'align-items:center',
-      'gap:0.5rem',
-      'pointer-events:auto'
-    ].join(';') + ';';
-    ov.innerHTML = [
-      '<div style="position:relative;width:100%;aspect-ratio:16/10;cursor:grab">',
-        '<canvas id="pspCanvas" style="display:block;width:100%!important;height:100%!important;border-radius:6px;touch-action:none;"></canvas>',
-      '</div>',
-      '<div id="pspRail" class="psp__rail" style="width:100%;box-sizing:border-box">',
-        '<b id="pspRailIdx">01</b>',
-        '<i id="pspRailTot">/01</i>',
-        '<a class="psp__railOpen" id="pspRailOpen" href="#" target="_blank" rel="noopener">↗</a>',
-      '</div>'
-    ].join('');
+    ov.style.cssText = 'position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);z-index:10;width:clamp(560px,72vw,1000px);display:flex;flex-direction:column;align-items:center;gap:0.5rem;pointer-events:auto;';
+    ov.innerHTML = '<div style="position:relative;width:100%;aspect-ratio:16/10;cursor:grab"><canvas id="pspCanvas" style="display:block;width:100%!important;height:100%!important;border-radius:6px;touch-action:none;"></canvas></div><div id="pspRail" class="psp__rail" style="width:100%;box-sizing:border-box"><b id="pspRailIdx">01</b><i id="pspRailTot">/01</i><a class="psp__railOpen" id="pspRailOpen" href="#" target="_blank" rel="noopener">↗</a></div>';
     hero.style.position = 'relative';
     hero.appendChild(ov);
     console.log('[PSP] mounted ✓');

@@ -30,34 +30,252 @@
 
 <script>
 (function() {
-  // True mobile = touch device (not just small window)
   var isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
   if (isMobile) {
-    function mountDice() {
+    function mountCard() {
       var hero = document.getElementById('hero');
-      if (!hero) { setTimeout(mountDice, 150); return; }
-      if (document.getElementById('mobileDice')) return;
+      if (!hero) { setTimeout(mountCard, 150); return; }
+      if (document.getElementById('mobileCard')) return;
+
+      // Inject styles
       var style = document.createElement('style');
-      style.textContent = '@property --spin{syntax:"<angle>";inherits:false;initial-value:0deg}@keyframes dice-spin{to{--spin:360deg}}#mobileDice{position:absolute;top:40%;left:50%;transform:translate(-50%,-50%) rotate(var(--spin));width:clamp(200px,60vw,320px);z-index:10;pointer-events:none;mix-blend-mode:screen;opacity:0.88;animation:dice-spin 180s linear infinite;will-change:transform;}';
+      style.textContent = `
+        #mobileCard {
+          position: absolute;
+          top: 38%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          z-index: 10;
+          width: clamp(260px, 78vw, 340px);
+          border-radius: 28px;
+          overflow: hidden;
+          background: rgba(255,255,255,0.07);
+          backdrop-filter: blur(40px) saturate(180%);
+          -webkit-backdrop-filter: blur(40px) saturate(180%);
+          border: 1px solid rgba(255,255,255,0.18);
+          box-shadow:
+            0 8px 32px rgba(0,0,0,0.4),
+            inset 0 1px 0 rgba(255,255,255,0.25),
+            inset 0 -1px 0 rgba(255,255,255,0.05);
+          pointer-events: auto;
+        }
+        #mobileCard .mc-cover {
+          position: relative;
+          width: 100%;
+          aspect-ratio: 1;
+          overflow: hidden;
+        }
+        #mobileCard .mc-cover img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+        }
+        #mobileCard .mc-cover-overlay {
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(to bottom, 
+            rgba(0,0,0,0.1) 0%, 
+            rgba(0,0,0,0) 40%,
+            rgba(0,0,0,0.65) 100%);
+        }
+        #mobileCard .mc-cover-text {
+          position: absolute;
+          bottom: 14px;
+          left: 16px;
+          right: 16px;
+        }
+        #mobileCard .mc-title {
+          color: #fff;
+          font-family: -apple-system, 'SF Pro Display', sans-serif;
+          font-size: 1.15rem;
+          font-weight: 700;
+          letter-spacing: -0.02em;
+          margin: 0 0 2px;
+          text-shadow: 0 1px 8px rgba(0,0,0,0.5);
+        }
+        #mobileCard .mc-artist {
+          color: rgba(255,255,255,0.75);
+          font-family: -apple-system, 'SF Pro Text', sans-serif;
+          font-size: 0.8rem;
+          font-weight: 500;
+          margin: 0;
+        }
+        #mobileCard .mc-body {
+          padding: 14px 16px 16px;
+          background: rgba(10,10,20,0.55);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+        }
+        #mobileCard .mc-progress-wrap {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin-bottom: 14px;
+        }
+        #mobileCard .mc-time {
+          color: rgba(255,255,255,0.55);
+          font-family: -apple-system, 'SF Pro Text', monospace;
+          font-size: 0.65rem;
+          min-width: 32px;
+        }
+        #mobileCard .mc-time.right { text-align: right; }
+        #mobileCard .mc-bar {
+          flex: 1;
+          height: 3px;
+          background: rgba(255,255,255,0.15);
+          border-radius: 99px;
+          cursor: pointer;
+          position: relative;
+          overflow: hidden;
+        }
+        #mobileCard .mc-fill {
+          height: 100%;
+          background: #fff;
+          border-radius: 99px;
+          box-shadow: 0 0 8px rgba(127,227,255,0.6);
+          transition: width 0.9s linear;
+          width: 0%;
+        }
+        #mobileCard .mc-controls {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 20px;
+        }
+        #mobileCard .mc-btn {
+          width: 44px;
+          height: 44px;
+          border-radius: 50%;
+          border: none;
+          background: rgba(255,255,255,0.1);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          border: 1px solid rgba(255,255,255,0.15);
+          color: #fff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.15s;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+          -webkit-tap-highlight-color: transparent;
+        }
+        #mobileCard .mc-btn:active { transform: scale(0.92); background: rgba(255,255,255,0.2); }
+        #mobileCard .mc-btn.play {
+          width: 52px;
+          height: 52px;
+          background: rgba(255,255,255,0.92);
+          box-shadow: 0 4px 16px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.8);
+        }
+        #mobileCard .mc-btn.play svg { color: #000; }
+        #mobileCard .mc-btn.play:active { background: rgba(255,255,255,0.75); }
+        @keyframes mc-float {
+          0%,100% { transform: translate(-50%,-50%) translateY(0px); }
+          50% { transform: translate(-50%,-50%) translateY(-8px); }
+        }
+        #mobileCard { animation: mc-float 5s ease-in-out infinite; }
+      `;
       document.head.appendChild(style);
-      var dice = document.createElement('img');
-      dice.id = 'mobileDice';
-      dice.src = '/images/dice.png';
-      dice.alt = '';
-      hero.style.position = 'relative';
-      hero.appendChild(dice);
-      var depth = 0.07;
-      function onScroll() {
-        var rect = hero.getBoundingClientRect();
-        var vh = window.innerHeight;
-        var p = (rect.top + rect.height / 2 - vh / 2) / vh;
-        dice.style.marginTop = (p * depth * vh).toFixed(1) + 'px';
+
+      var audio = document.getElementById('bgAudio');
+      var dur = audio ? (audio.duration || 180) : 180;
+
+      function svgIcon(d, size) {
+        size = size || 18;
+        return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 24 24" fill="currentColor"><path d="'+d+'"/></svg>';
       }
-      window.addEventListener('scroll', onScroll, { passive: true });
-      onScroll();
+      var iconPlay   = svgIcon('M8 5.14v14l11-7-11-7z', 20);
+      var iconPause  = svgIcon('M6 19h4V5H6v14zm8-14v14h4V5h-4z', 20);
+      var iconPrev   = svgIcon('M6 6h2v12H6zm3.5 6 8.5 6V6z', 18);
+      var iconNext   = svgIcon('M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z', 18);
+
+      var card = document.createElement('div');
+      card.id = 'mobileCard';
+      card.innerHTML =
+        '<div class="mc-cover">' +
+          '<img src="/psp/works/saad-main.jpg" alt="Saad Musani" />' +
+          '<div class="mc-cover-overlay"></div>' +
+          '<div class="mc-cover-text">' +
+            '<p class="mc-title">Saad Musani</p>' +
+            '<p class="mc-artist">AI Engineer &amp; Builder</p>' +
+          '</div>' +
+        '</div>' +
+        '<div class="mc-body">' +
+          '<div class="mc-progress-wrap">' +
+            '<span class="mc-time" id="mcTimeCur">0:00</span>' +
+            '<div class="mc-bar" id="mcBar"><div class="mc-fill" id="mcFill"></div></div>' +
+            '<span class="mc-time right" id="mcTimeTot">3:00</span>' +
+          '</div>' +
+          '<div class="mc-controls">' +
+            '<button class="mc-btn" id="mcPrev" aria-label="Previous">'+iconPrev+'</button>' +
+            '<button class="mc-btn play" id="mcPlay" aria-label="Play">'+iconPlay+'</button>' +
+            '<button class="mc-btn" id="mcNext" aria-label="Next">'+iconNext+'</button>' +
+          '</div>' +
+        '</div>';
+
+      hero.style.position = 'relative';
+      hero.appendChild(card);
+
+      // Wire up controls to actual bgAudio
+      var playBtn = document.getElementById('mcPlay');
+      var fill    = document.getElementById('mcFill');
+      var timeCur = document.getElementById('mcTimeCur');
+      var timeTot = document.getElementById('mcTimeTot');
+      var bar     = document.getElementById('mcBar');
+
+      function fmt(s) {
+        s = Math.floor(s || 0);
+        return Math.floor(s/60)+':'+(s%60<10?'0':'')+s%60;
+      }
+
+      function updateBar() {
+        if (!audio) return;
+        var pct = audio.duration ? (audio.currentTime / audio.duration * 100) : 0;
+        fill.style.width = pct + '%';
+        timeCur.textContent = fmt(audio.currentTime);
+        timeTot.textContent = fmt(audio.duration);
+      }
+
+      function setIcon(playing) {
+        playBtn.innerHTML = playing ? iconPause : iconPlay;
+      }
+
+      if (audio) {
+        audio.addEventListener('timeupdate', updateBar);
+        audio.addEventListener('durationchange', updateBar);
+        audio.addEventListener('play',  function(){ setIcon(true); });
+        audio.addEventListener('pause', function(){ setIcon(false); });
+
+        playBtn.addEventListener('click', function() {
+          if (audio.paused) {
+            audio.muted = false;
+            audio.volume = 0.42;
+            audio.play().catch(function(){});
+          } else {
+            audio.pause();
+          }
+        });
+
+        bar.addEventListener('click', function(ev) {
+          if (!audio.duration) return;
+          var r = bar.getBoundingClientRect();
+          audio.currentTime = ((ev.clientX - r.left) / r.width) * audio.duration;
+        });
+
+        document.getElementById('mcPrev').addEventListener('click', function() {
+          if (audio) audio.currentTime = Math.max(0, audio.currentTime - 10);
+        });
+        document.getElementById('mcNext').addEventListener('click', function() {
+          if (audio) audio.currentTime = Math.min(audio.duration||0, audio.currentTime + 10);
+        });
+
+        setIcon(!audio.paused);
+        updateBar();
+      }
     }
-    window.addEventListener('load', function() { setTimeout(mountDice, 300); });
+    window.addEventListener('load', function() { setTimeout(mountCard, 400); });
     return;
   }
 

@@ -56,96 +56,75 @@
           50%{transform:translate(-50%,-50%) translateY(-8px)}
         }
         #mobileCard .mc-art {
-          width:100%; aspect-ratio:1;
-          object-fit:cover; display:block;
+          width:100%; aspect-ratio:1; object-fit:cover; display:block;
         }
         #mobileCard .mc-panel {
           padding:12px 14px 14px;
-          background:rgba(30,30,40,0.55);
-          backdrop-filter:blur(48px) saturate(200%) brightness(0.9);
-          -webkit-backdrop-filter:blur(48px) saturate(200%) brightness(0.9);
+          background:rgba(20,20,30,0.55);
+          backdrop-filter:blur(48px) saturate(200%);
+          -webkit-backdrop-filter:blur(48px) saturate(200%);
           border-top:0.5px solid rgba(255,255,255,0.12);
         }
-        #mobileCard .mc-info {
-          margin-bottom:9px;
-        }
         #mobileCard .mc-title {
-          font-family:-apple-system,'SF Pro Display',sans-serif;
+          font-family:-apple-system,sans-serif;
           font-size:0.85rem; font-weight:700;
-          color:#fff; margin:0 0 1px;
-          letter-spacing:-0.01em;
-          white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+          color:#fff; margin:0 0 1px; letter-spacing:-0.01em;
         }
         #mobileCard .mc-artist {
-          font-family:-apple-system,'SF Pro Text',sans-serif;
-          font-size:0.68rem; color:rgba(255,255,255,0.5);
-          margin:0; letter-spacing:0.01em;
+          font-family:-apple-system,sans-serif;
+          font-size:0.65rem; color:rgba(255,255,255,0.45);
+          margin:0 0 10px; letter-spacing:0.01em;
         }
-        /* Progress */
         #mobileCard .mc-track {
           width:100%; height:3px;
-          background:rgba(255,255,255,0.15);
+          background:rgba(255,255,255,0.12);
           border-radius:99px; overflow:hidden;
           cursor:pointer; margin-bottom:5px;
         }
         #mobileCard .mc-prog {
           height:100%; width:0%;
-          background:rgba(255,255,255,0.85);
-          border-radius:99px;
-          transition:width 0.9s linear;
+          background:rgba(255,255,255,0.8);
+          border-radius:99px; transition:width 0.9s linear;
         }
         #mobileCard .mc-times {
           display:flex; justify-content:space-between;
-          font-size:0.55rem; color:rgba(255,255,255,0.35);
-          font-family:-apple-system,monospace;
-          margin-bottom:11px;
+          font-size:0.55rem; color:rgba(255,255,255,0.3);
+          font-family:monospace; margin-bottom:11px;
         }
-        /* Controls */
         #mobileCard .mc-ctrl {
           display:flex; align-items:center;
-          justify-content:space-between;
-          padding:0 4px;
+          justify-content:space-between; padding:0 2px;
         }
-        #mobileCard .mc-btn {
-          border:none; background:none; padding:0;
-          cursor:pointer; color:rgba(255,255,255,0.85);
-          display:flex; align-items:center; justify-content:center;
+        /* glass-element overrides */
+        #mobileCard glass-element {
+          cursor:pointer;
           -webkit-tap-highlight-color:transparent;
-          transition:opacity 0.12s, transform 0.12s;
         }
-        #mobileCard .mc-btn:active { opacity:0.4; transform:scale(0.85); }
-        #mobileCard .mc-playbtn {
-          width:42px; height:42px; border-radius:50%;
-          background:rgba(255,255,255,0.92);
-          border:0.5px solid rgba(255,255,255,0.3);
-          color:#111;
-          box-shadow:0 2px 12px rgba(0,0,0,0.3), inset 0 1px 0 #fff;
+        #mobileCard glass-element svg {
+          display:block;
         }
-        #mobileCard .mc-playbtn:active { background:rgba(255,255,255,0.65); }
       `;
       document.head.appendChild(st);
 
-      function ic(d,w){return '<svg width="'+w+'" height="'+w+'" viewBox="0 0 24 24" fill="currentColor"><path d="'+d+'"/></svg>';}
-      var iPlay  = ic('M8 5v14l11-7z', 18);
-      var iPause = ic('M6 19h4V5H6v14zm8-14v14h4V5h-4z', 18);
-      var iPrev  = ic('M6 6h2v12H6zm3.5 6 8.5 6V6z', 20);
-      var iNext  = ic('M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z', 20);
+      function ic(d,w){return '<svg width="'+w+'" height="'+w+'" viewBox="0 0 24 24" fill="currentColor" style="display:block"><path d="'+d+'"/></svg>';}
+      var iPlay  = ic('M8 5v14l11-7z', 20);
+      var iPause = ic('M6 19h4V5H6v14zm8-14v14h4V5h-4z', 20);
+      var iPrev  = ic('M6 6h2v12H6zm3.5 6 8.5 6V6z', 18);
+      var iNext  = ic('M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z', 18);
 
       var card = document.createElement('div');
       card.id = 'mobileCard';
       card.innerHTML =
         '<img class="mc-art" src="/psp/works/saad-main.jpg" alt=""/>' +
         '<div class="mc-panel">' +
-          '<div class="mc-info">' +
-            '<p class="mc-title">Saad Musani</p>' +
-            '<p class="mc-artist">AI · Design · Build</p>' +
-          '</div>' +
+          '<p class="mc-title">Saad Musani</p>' +
+          '<p class="mc-artist">AI · Design · Build</p>' +
           '<div class="mc-track" id="mcT"><div class="mc-prog" id="mcP"></div></div>' +
           '<div class="mc-times"><span id="mcC">0:00</span><span id="mcD">0:00</span></div>' +
           '<div class="mc-ctrl">' +
-            '<button class="mc-btn" id="mcPv">'+iPrev+'</button>' +
-            '<button class="mc-btn mc-playbtn" id="mcPl">'+iPlay+'</button>' +
-            '<button class="mc-btn" id="mcNx">'+iNext+'</button>' +
+            '<glass-element id="mcPv" width="40" height="40" radius="20" depth="4" blur="1" strength="30" background-color="rgba(255,255,255,0.12)" chromatic-aberration="1.5" style="--glass-padding:0px;">'+iPrev+'</glass-element>' +
+            '<glass-element id="mcPl" width="48" height="48" radius="24" depth="5" blur="1" strength="35" background-color="rgba(255,255,255,0.85)" chromatic-aberration="1.5" style="--glass-padding:0px;color:#111">'+iPlay+'</glass-element>' +
+            '<glass-element id="mcNx" width="40" height="40" radius="20" depth="4" blur="1" strength="30" background-color="rgba(255,255,255,0.12)" chromatic-aberration="1.5" style="--glass-padding:0px;">'+iNext+'</glass-element>' +
           '</div>' +
         '</div>';
 
@@ -161,7 +140,9 @@
         document.getElementById('mcC').textContent=fmt(audio.currentTime);
         document.getElementById('mcD').textContent=fmt(audio.duration);
         var on=!audio.paused&&!audio.muted;
-        document.getElementById('mcPl').innerHTML=on?iPause:iPlay;
+        // update play button icon inside glass-element
+        var plBtn = document.getElementById('mcPl');
+        if(plBtn) plBtn.innerHTML = on ? iPause : iPlay;
       }
       if(audio){
         ['timeupdate','durationchange','play','pause'].forEach(function(ev){audio.addEventListener(ev,upd);});
@@ -349,4 +330,6 @@
   }
 })();
 </script>
+<script src="/liquid-glass/displacement-utils.js"></script>
+<script src="/liquid-glass/glass-element.js"></script>
 </body></html>

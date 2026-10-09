@@ -94,52 +94,34 @@
           display:flex;align-items:center;
           justify-content:space-between;padding:0 4px;
         }
-        /* Liquid metal button */
+        /* Buttons */
         .mc-lmbtn {
           position:relative;
-          border:none;background:none;padding:0;
+          border:none;padding:0;
           cursor:pointer;
           -webkit-tap-highlight-color:transparent;
           border-radius:100px;
           outline:none;
-        }
-        .mc-lmbtn .lm-shader {
-          position:absolute;inset:0;
-          border-radius:100px;overflow:hidden;
-          background:conic-gradient(
-            from 0deg,
-            #c8c8c8 0deg, #f5f5f5 60deg, #888 120deg,
-            #e0e0e0 180deg, #aaa 240deg, #f0f0f0 300deg, #c8c8c8 360deg
-          );
-          animation:lmSpin 3s linear infinite;
-          opacity:0.92;
-        }
-        @keyframes lmSpin{to{filter:hue-rotate(360deg) brightness(1.1);}}
-        .mc-lmbtn .lm-inner {
-          position:absolute;inset:2px;
-          border-radius:100px;
-          background:linear-gradient(180deg,#1a1a1a 0%,#000 100%);
-        }
-        .mc-lmbtn .lm-content {
-          position:relative;z-index:2;
+          background:rgba(255,255,255,0.08);
+          border:0.5px solid rgba(255,255,255,0.15);
+          box-shadow:0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.12);
           display:flex;align-items:center;justify-content:center;
-          color:rgba(255,255,255,0.75);
+          transition:transform 0.1s, opacity 0.1s;
+        }
+        .mc-lmbtn .lm-shader,.mc-lmbtn .lm-inner{display:none;}
+        .mc-lmbtn .lm-content {
+          display:flex;align-items:center;justify-content:center;
+          color:rgba(255,255,255,0.7);
           pointer-events:none;
         }
-        .mc-lmbtn:active .lm-shader{opacity:1;animation-duration:0.5s;}
-        .mc-lmbtn:active .lm-inner{background:linear-gradient(180deg,#111 0%,#000 100%);}
-        .mc-lmbtn:active{transform:scale(0.92);}
-        .mc-lmbtn{transition:transform 0.12s;}
-        /* Play btn — brighter */
-        .mc-lmbtn.play .lm-shader{
-          background:conic-gradient(
-            from 0deg,
-            #d0d0d0 0deg,#fff 60deg,#999 120deg,
-            #eee 180deg,#bbb 240deg,#f8f8f8 300deg,#d0d0d0 360deg
-          );
+        .mc-lmbtn:active{transform:scale(0.88);opacity:0.6;}
+        .mc-lmbtn.play {
+          background:rgba(255,255,255,0.88);
+          border:0.5px solid rgba(255,255,255,0.4);
+          box-shadow:0 4px 16px rgba(0,0,0,0.35), inset 0 1px 0 #fff;
         }
-        .mc-lmbtn.play .lm-inner{background:linear-gradient(180deg,#2a2a2a 0%,#111 100%);}
-        .mc-lmbtn.play .lm-content{color:#fff;}
+        .mc-lmbtn.play .lm-content{color:#111;}
+        .mc-lmbtn.play:active{background:rgba(255,255,255,0.65);}
       `;
       document.head.appendChild(st);
 
@@ -176,10 +158,10 @@
       hero.style.position = 'relative';
       hero.appendChild(card);
 
-      var audio = document.getElementById('bgAudio');
+      function ga(){ return document.getElementById('bgAudio'); }
       function fmt(t){t=Math.floor(t||0);return Math.floor(t/60)+':'+(t%60<10?'0':'')+t%60;}
       function upd(){
-        if(!audio)return;
+        var audio=ga(); if(!audio)return;
         var p=audio.duration?(audio.currentTime/audio.duration*100):0;
         document.getElementById('mcP').style.width=p.toFixed(1)+'%';
         document.getElementById('mcC').textContent=fmt(audio.currentTime);
@@ -188,32 +170,41 @@
         var plBtn=document.getElementById('mcPl');
         if(plBtn) plBtn.querySelector('.lm-content').innerHTML=on?iPause:iPlay;
       }
-      if(audio){
+
+      // Wire events once audio exists
+      function wireAudio() {
+        var audio = ga();
+        if(!audio){ setTimeout(wireAudio, 200); return; }
         ['timeupdate','durationchange','play','pause'].forEach(function(ev){
-          audio.addEventListener(ev,upd);
-        });
-        document.getElementById('mcPl').addEventListener('click',function(){
-          if(audio.paused){
-            audio.muted=false;
-            if(!audio.volume)audio.volume=0.42;
-            audio.play().catch(function(){});
-          } else {
-            audio.pause();
-          }
-        });
-        document.getElementById('mcT').addEventListener('click',function(ev){
-          if(!audio.duration)return;
-          var r=this.getBoundingClientRect();
-          audio.currentTime=((ev.clientX-r.left)/r.width)*audio.duration;
-        });
-        document.getElementById('mcPv').addEventListener('click',function(){
-          audio.currentTime=Math.max(0,audio.currentTime-10);
-        });
-        document.getElementById('mcNx').addEventListener('click',function(){
-          audio.currentTime=Math.min(audio.duration||0,audio.currentTime+10);
+          audio.addEventListener(ev, upd);
         });
         upd();
       }
+      wireAudio();
+
+      document.getElementById('mcPl').addEventListener('click', function(){
+        var audio = ga(); if(!audio) return;
+        if(audio.paused){
+          audio.muted = false;
+          if(!audio.volume) audio.volume = 0.42;
+          audio.play().catch(function(){});
+        } else {
+          audio.pause();
+        }
+      });
+      document.getElementById('mcT').addEventListener('click', function(ev){
+        var audio = ga(); if(!audio||!audio.duration) return;
+        var r = this.getBoundingClientRect();
+        audio.currentTime = ((ev.clientX-r.left)/r.width)*audio.duration;
+      });
+      document.getElementById('mcPv').addEventListener('click', function(){
+        var audio = ga(); if(!audio) return;
+        audio.currentTime = Math.max(0, audio.currentTime-10);
+      });
+      document.getElementById('mcNx').addEventListener('click', function(){
+        var audio = ga(); if(!audio) return;
+        audio.currentTime = Math.min(audio.duration||0, audio.currentTime+10);
+      });
     }
     window.addEventListener('load',function(){setTimeout(mountCard,400);});
     return;

@@ -30,51 +30,29 @@
 
 <script>
 (function() {
-  var isMobile = window.innerWidth < 768;
+  // True mobile = touch device (not just small window)
+  var isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
   if (isMobile) {
     function mountDice() {
       var hero = document.getElementById('hero');
       if (!hero) { setTimeout(mountDice, 150); return; }
       if (document.getElementById('mobileDice')) return;
-
-      // Inject dice CSS
       var style = document.createElement('style');
-      style.textContent = [
-        '@property --spin{syntax:"<angle>";inherits:false;initial-value:0deg}',
-        '@keyframes dice-spin{to{--spin:360deg}}',
-        '@keyframes dice-float{0%,100%{transform:translate(-50%,-50%) rotate(var(--spin)) translateY(0px)}50%{transform:translate(-50%,-50%) rotate(var(--spin)) translateY(-12px)}}',
-        '#mobileDice{',
-          'position:absolute;',
-          'top:40%;left:50%;',
-          'transform:translate(-50%,-50%) rotate(var(--spin));',
-          'width:clamp(200px,60vw,320px);',
-          'z-index:10;',
-          'pointer-events:none;',
-          'mix-blend-mode:screen;',
-          'opacity:0.88;',
-          'animation:dice-spin 180s linear infinite;',
-          'transition:transform 0.1s linear;',
-          'will-change:transform;',
-        '}',
-      ].join('');
+      style.textContent = '@property --spin{syntax:"<angle>";inherits:false;initial-value:0deg}@keyframes dice-spin{to{--spin:360deg}}#mobileDice{position:absolute;top:40%;left:50%;transform:translate(-50%,-50%) rotate(var(--spin));width:clamp(200px,60vw,320px);z-index:10;pointer-events:none;mix-blend-mode:screen;opacity:0.88;animation:dice-spin 180s linear infinite;will-change:transform;}';
       document.head.appendChild(style);
-
       var dice = document.createElement('img');
       dice.id = 'mobileDice';
       dice.src = '/images/dice.png';
       dice.alt = '';
       hero.style.position = 'relative';
       hero.appendChild(dice);
-
-      // Parallax on scroll - depth 0.07 like repo2
       var depth = 0.07;
       function onScroll() {
         var rect = hero.getBoundingClientRect();
         var vh = window.innerHeight;
         var p = (rect.top + rect.height / 2 - vh / 2) / vh;
-        var ty = (p * depth * vh).toFixed(1);
-        dice.style.marginTop = ty + 'px';
+        dice.style.marginTop = (p * depth * vh).toFixed(1) + 'px';
       }
       window.addEventListener('scroll', onScroll, { passive: true });
       onScroll();

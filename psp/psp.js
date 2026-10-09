@@ -15,9 +15,9 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 const WORKS = window.SK_WORKS || [];
 const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-// Desktop only — skip entirely on mobile
-if (window.innerWidth < 768) {
-  // noop — do not load Three.js or PSP on mobile
+// Desktop only — skip entirely on mobile (touch devices)
+if (('ontouchstart' in window) || (navigator.maxTouchPoints > 0)) {
+  // noop
 } else {
 
 // Wait for canvas to be mounted by the inline script (it may not exist yet)

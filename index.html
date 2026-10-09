@@ -240,12 +240,11 @@
       }
 
       document.getElementById('mcPl').addEventListener('click', function(e){
-        e.stopPropagation();
         var a=ga(); if(!a)return;
         if(a.paused){
           a.muted=false;
           if(!a.volume)a.volume=0.42;
-          a.play().catch(function(){});
+          var p=a.play();if(p&&p.catch)p.catch(function(err){console.error('[MC] play failed:',err);});
         } else {
           a.pause();
         }
@@ -256,12 +255,10 @@
         a.currentTime=((ev.clientX-r.left)/r.width)*a.duration;
       });
       document.getElementById('mcPv').addEventListener('click', function(e){
-        e.stopPropagation();
         var a=ga(); if(!a)return;
         a.currentTime=Math.max(0,a.currentTime-10);
       });
       document.getElementById('mcNx').addEventListener('click', function(e){
-        e.stopPropagation();
         var a=ga(); if(!a)return;
         a.currentTime=Math.min(a.duration||0,a.currentTime+10);
       });
@@ -307,7 +304,8 @@
   if (isMobile) {
     function mountCard() {
       var hero = document.getElementById('hero');
-      if (!hero) { setTimeout(mountCard, 150); return; }
+      var audio = document.getElementById('bgAudio');
+      if (!hero || !audio) return;
       if (document.getElementById('mobileCard')) return;
 
       var st = document.createElement('style');
@@ -327,12 +325,15 @@
           0%,100%{transform:translate(-50%,-50%) translateY(0)}
           50%{transform:translate(-50%,-50%) translateY(-8px)}
         }
-        #mobileCard .mc-art{width:100%;aspect-ratio:1;object-fit:cover;display:block;}
+        #mobileCard .mc-cover{position:relative;width:100%;aspect-ratio:1;overflow:hidden;}
+        #mobileCard .mc-art{width:100%;height:100%;object-fit:cover;display:block;}
+        #mobileCard .mc-cover:after{content:"";position:absolute;inset:0;background:linear-gradient(to bottom,transparent 42%,rgba(4,8,21,.9) 100%);pointer-events:none;}
+        #mobileCard .mc-meta{position:absolute;z-index:1;left:14px;right:14px;bottom:13px;}
         #mobileCard .mc-panel{
           padding:12px 14px 16px;
-          background:rgba(255,255,255,0.06);
-          backdrop-filter:blur(60px) saturate(220%) brightness(1.15);
-          -webkit-backdrop-filter:blur(60px) saturate(220%) brightness(1.15);
+          background:rgba(10,15,35,0.75);
+          backdrop-filter:blur(60px) saturate(150%);
+          -webkit-backdrop-filter:blur(60px) saturate(150%);
           border-top:0.5px solid rgba(255,255,255,0.18);
           box-shadow:inset 0 1px 0 rgba(255,255,255,0.12);
         }
@@ -343,8 +344,8 @@
         }
         #mobileCard .mc-artist{
           font-family:-apple-system,sans-serif;
-          font-size:0.65rem;color:rgba(255,255,255,0.45);
-          margin:0 0 10px;
+          font-size:0.65rem;color:rgba(255,255,255,0.65);
+          margin:0;
         }
         #mobileCard .mc-track{
           width:100%;height:3px;
@@ -354,8 +355,9 @@
         }
         #mobileCard .mc-prog{
           height:100%;width:0%;
-          background:rgba(255,255,255,0.8);
+          background:#55a9ff;
           border-radius:99px;transition:width 0.9s linear;
+          box-shadow:0 0 9px rgba(85,169,255,.9);
         }
         #mobileCard .mc-times{
           display:flex;justify-content:space-between;
@@ -414,10 +416,9 @@
       var card = document.createElement('div');
       card.id = 'mobileCard';
       card.innerHTML =
-        '<img class="mc-art" src="/psp/works/saad-main.jpg" alt=""/>' +
+        '<div class="mc-cover"><img class="mc-art" src="/psp/works/saad-main.jpg" alt=""/>' +
+          '<div class="mc-meta"><p class="mc-title">Saad Musani</p><p class="mc-artist">Design · Build</p></div></div>' +
         '<div class="mc-panel">' +
-          '<p class="mc-title">Saad Musani</p>' +
-          '<p class="mc-artist">Design · Build</p>' +
           '<div class="mc-track" id="mcT"><div class="mc-prog" id="mcP"></div></div>' +
           '<div class="mc-times"><span id="mcC">0:00</span><span id="mcD">0:00</span></div>' +
           '<div class="mc-ctrl">' +
@@ -430,10 +431,8 @@
       hero.style.position = 'relative';
       hero.appendChild(card);
 
-      function ga(){ return document.getElementById('bgAudio'); }
       function fmt(t){t=Math.floor(t||0);return Math.floor(t/60)+':'+(t%60<10?'0':'')+t%60;}
       function upd(){
-        var audio=ga(); if(!audio)return;
         var p=audio.duration?(audio.currentTime/audio.duration*100):0;
         document.getElementById('mcP').style.width=p.toFixed(1)+'%';
         document.getElementById('mcC').textContent=fmt(audio.currentTime);
@@ -443,42 +442,33 @@
         if(plBtn) plBtn.querySelector('.lm-content').innerHTML=on?iPause:iPlay;
       }
 
-      // Wire events once audio exists
-      function wireAudio() {
-        var audio = ga();
-        if(!audio){ setTimeout(wireAudio, 200); return; }
-        ['timeupdate','durationchange','play','pause'].forEach(function(ev){
-          audio.addEventListener(ev, upd);
-        });
-        upd();
-      }
-      wireAudio();
+      ['timeupdate','durationchange','play','pause'].forEach(function(ev){
+        audio.addEventListener(ev, upd);
+      });
+      upd();
 
       document.getElementById('mcPl').addEventListener('click', function(){
-        var audio = ga(); if(!audio) return;
         if(audio.paused){
           audio.muted = false;
-          if(!audio.volume) audio.volume = 0.42;
+          audio.volume = 0.42;
           audio.play().catch(function(){});
         } else {
           audio.pause();
         }
       });
       document.getElementById('mcT').addEventListener('click', function(ev){
-        var audio = ga(); if(!audio||!audio.duration) return;
+        if(!audio.duration) return;
         var r = this.getBoundingClientRect();
         audio.currentTime = ((ev.clientX-r.left)/r.width)*audio.duration;
       });
       document.getElementById('mcPv').addEventListener('click', function(){
-        var audio = ga(); if(!audio) return;
         audio.currentTime = Math.max(0, audio.currentTime-10);
       });
       document.getElementById('mcNx').addEventListener('click', function(){
-        var audio = ga(); if(!audio) return;
         audio.currentTime = Math.min(audio.duration||0, audio.currentTime+10);
       });
     }
-    window.addEventListener('load',function(){setTimeout(mountCard,400);});
+    mountCard();
     return;
   }
 

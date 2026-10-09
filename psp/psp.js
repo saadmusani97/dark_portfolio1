@@ -24,15 +24,15 @@ if (window.innerWidth < 768) {
 function waitForCanvas(cb) {
   const el = document.getElementById('pspCanvas');
   if (el) { cb(el); return; }
+  let done = false;
   const obs = new MutationObserver(() => {
     const el2 = document.getElementById('pspCanvas');
-    if (el2) { obs.disconnect(); cb(el2); }
+    if (el2 && !done) { done = true; clearInterval(t); obs.disconnect(); cb(el2); }
   });
   obs.observe(document.body, { childList: true, subtree: true });
-  // Also poll as fallback
   const t = setInterval(() => {
     const el3 = document.getElementById('pspCanvas');
-    if (el3) { clearInterval(t); obs.disconnect(); cb(el3); }
+    if (el3 && !done) { done = true; clearInterval(t); obs.disconnect(); cb(el3); }
   }, 100);
 }
 

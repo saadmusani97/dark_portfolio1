@@ -23,29 +23,10 @@
 <!-- ── AMBIENT AUDIO ─────────────────────────────────────── -->
 <audio id="bgAudio" src="/theme.mp3" loop preload="auto" playsinline></audio>
 
-<button id="soundToggle" aria-pressed="false" aria-label="Toggle music" style="
-  position:fixed;
-  bottom:1.2rem;
-  right:1.2rem;
-  z-index:9999;
-  font-family:var(--font-mono,'Martian Mono',monospace);
-  font-size:0.5rem;
-  letter-spacing:0.15em;
-  text-transform:uppercase;
-  color:var(--color-fg2,#888);
-  background:none;
-  border:1px solid var(--color-border,#2E2E2E);
-  padding:0.4rem 0.75rem;
-  cursor:pointer;
-  border-radius:2px;
-  transition:color 0.2s,border-color 0.2s;
-">♪ music</button>
-
 <script>
 (function(){
   var audio = document.getElementById('bgAudio');
-  var btn   = document.getElementById('soundToggle');
-  var VOL   = 0.42;
+  var VOL = 0.42;
   var wanted = false, audible = false, inFlight = null, fadeTimer = null;
 
   function fadeTo(target, done) {
@@ -54,6 +35,51 @@
     var step = (target - audio.volume) / 22;
     fadeTimer = setInterval(function() {
   var isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+
+  // ── Bottom-left music toggle (both mobile + desktop) ──
+  function addMusicBtn() {
+    if (document.getElementById('musicToggleBtn')) return;
+    var btn = document.createElement('button');
+    btn.id = 'musicToggleBtn';
+    var style = [
+      'position:fixed',
+      'bottom:1.2rem',
+      'left:1.2rem',
+      'z-index:9999',
+      'width:36px',
+      'height:36px',
+      'border-radius:50%',
+      'border:1px solid rgba(255,255,255,0.15)',
+      'background:rgba(255,255,255,0.06)',
+      'backdrop-filter:blur(12px)',
+      '-webkit-backdrop-filter:blur(12px)',
+      'color:rgba(255,255,255,0.7)',
+      'font-size:1rem',
+      'cursor:pointer',
+      'display:flex',
+      'align-items:center',
+      'justify-content:center',
+      'transition:all 0.2s',
+      'box-shadow:0 2px 8px rgba(0,0,0,0.3)'
+    ].join(';');
+    btn.style.cssText = style;
+    btn.innerHTML = '♪';
+    btn.setAttribute('aria-label','Toggle music');
+    btn.addEventListener('click', function() {
+      if (window.__audioCtrl) {
+        window.__audioCtrl.toggle();
+        btn.innerHTML = window.__audioCtrl.isPlaying() ? '♪' : '♩';
+      }
+    });
+    // Keep icon in sync
+    var audio = document.getElementById('bgAudio');
+    if (audio) {
+      audio.addEventListener('play',  function(){ btn.innerHTML = '♪'; btn.style.color = 'rgba(255,255,255,0.9)'; });
+      audio.addEventListener('pause', function(){ btn.innerHTML = '♩'; btn.style.color = 'rgba(255,255,255,0.4)'; });
+    }
+    document.body.appendChild(btn);
+  }
+  window.addEventListener('load', addMusicBtn);
 
   if (isMobile) {
     function mountCard() {
@@ -71,127 +97,34 @@
           width:clamp(210px,60vw,270px);
           border-radius:24px;
           overflow:hidden;
-          box-shadow:
-            0 32px 64px rgba(0,0,0,0.7),
-            0 0 0 0.5px rgba(255,255,255,0.08),
-            inset 0 1px 0 rgba(255,255,255,0.15);
+          box-shadow:0 32px 64px rgba(0,0,0,0.7),0 0 0 0.5px rgba(255,255,255,0.08),inset 0 1px 0 rgba(255,255,255,0.15);
           animation:mcFloat 6s ease-in-out infinite;
         }
-        @keyframes mcFloat{
-          0%,100%{transform:translate(-50%,-50%) translateY(0)}
-          50%{transform:translate(-50%,-50%) translateY(-10px)}
-        }
-        /* Cover art with gradient overlay */
-        #mobileCard .mc-art-wrap{
-          position:relative;width:100%;aspect-ratio:1;overflow:hidden;
-        }
-        #mobileCard .mc-art{
-          width:100%;height:100%;object-fit:cover;display:block;
-        }
-        #mobileCard .mc-art-grad{
-          position:absolute;inset:0;
-          background:linear-gradient(
-            180deg,
-            rgba(10,15,30,0) 30%,
-            rgba(10,15,30,0.6) 70%,
-            rgba(10,15,30,0.95) 100%
-          );
-        }
-        #mobileCard .mc-art-info{
-          position:absolute;bottom:12px;left:14px;right:14px;
-        }
-        #mobileCard .mc-title{
-          font-family:-apple-system,'SF Pro Display',sans-serif;
-          font-size:0.9rem;font-weight:700;
-          color:rgba(255,255,255,0.95);
-          margin:0 0 2px;letter-spacing:-0.01em;
-        }
-        #mobileCard .mc-artist{
-          font-family:-apple-system,'SF Pro Text',sans-serif;
-          font-size:0.62rem;color:rgba(255,255,255,0.45);
-          margin:0;letter-spacing:0.06em;text-transform:uppercase;
-        }
-        /* Glass panel */
-        #mobileCard .mc-panel{
-          padding:12px 14px 16px;
-          background:linear-gradient(
-            180deg,
-            rgba(15,20,40,0.7) 0%,
-            rgba(8,12,28,0.85) 100%
-          );
-          backdrop-filter:blur(60px) saturate(180%);
-          -webkit-backdrop-filter:blur(60px) saturate(180%);
-          border-top:0.5px solid rgba(255,255,255,0.1);
-        }
-        /* Progress */
-        #mobileCard .mc-track{
-          width:100%;height:2.5px;
-          background:rgba(255,255,255,0.1);
-          border-radius:99px;overflow:hidden;
-          cursor:pointer;margin-bottom:4px;
-          position:relative;
-        }
-        #mobileCard .mc-prog{
-          height:100%;width:0%;
-          background:linear-gradient(90deg,rgba(100,160,255,0.8),rgba(180,210,255,0.95));
-          border-radius:99px;transition:width 0.9s linear;
-          box-shadow:0 0 6px rgba(120,180,255,0.4);
-        }
-        #mobileCard .mc-times{
-          display:flex;justify-content:space-between;
-          font-size:0.52rem;color:rgba(255,255,255,0.28);
-          font-family:-apple-system,monospace;
-          letter-spacing:0.04em;margin-bottom:12px;
-        }
-        /* Controls */
-        #mobileCard .mc-ctrl{
-          display:flex;align-items:center;
-          justify-content:center;gap:16px;
-        }
-        .mc-btn-wrap{
-          position:relative;
-          -webkit-tap-highlight-color:transparent;
-          cursor:pointer;
-        }
-        .mc-btn-wrap button{
-          border:none;padding:0;cursor:pointer;
-          display:flex;align-items:center;justify-content:center;
-          transition:transform 0.1s, opacity 0.1s;
-          -webkit-tap-highlight-color:transparent;
-          outline:none;
-        }
-        .mc-btn-wrap button:active{transform:scale(0.86);opacity:0.55;}
-        /* Skip buttons - small frosted pill */
-        .mc-skip-btn{
-          width:38px;height:38px;
-          border-radius:50%;
-          background:rgba(255,255,255,0.07);
-          border:0.5px solid rgba(255,255,255,0.13);
-          box-shadow:0 2px 8px rgba(0,0,0,0.25),inset 0 1px 0 rgba(255,255,255,0.1);
-          color:rgba(255,255,255,0.65);
-        }
-        /* Play button - layered glass orb */
-        .mc-play-btn{
-          width:52px;height:52px;
-          border-radius:50%;
-          background:rgba(255,255,255,0.92);
-          border:0.5px solid rgba(255,255,255,0.5);
-          color:#111;
-          box-shadow:
-            0 6px 20px rgba(0,0,0,0.4),
-            0 2px 6px rgba(0,0,0,0.2),
-            inset 0 1px 0 rgba(255,255,255,1),
-            inset 0 -1px 0 rgba(0,0,0,0.1);
-        }
-        .mc-play-btn:active{background:rgba(255,255,255,0.65)!important;}
+        @keyframes mcFloat{0%,100%{transform:translate(-50%,-50%) translateY(0)}50%{transform:translate(-50%,-50%) translateY(-10px)}}
+        #mobileCard .mc-art-wrap{position:relative;width:100%;aspect-ratio:1;overflow:hidden;}
+        #mobileCard .mc-art{width:100%;height:100%;object-fit:cover;display:block;}
+        #mobileCard .mc-art-grad{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,15,30,0) 30%,rgba(10,15,30,0.6) 70%,rgba(10,15,30,0.95) 100%);}
+        #mobileCard .mc-art-info{position:absolute;bottom:12px;left:14px;right:14px;}
+        #mobileCard .mc-title{font-family:-apple-system,sans-serif;font-size:0.9rem;font-weight:700;color:rgba(255,255,255,0.95);margin:0 0 2px;letter-spacing:-0.01em;}
+        #mobileCard .mc-artist{font-family:-apple-system,sans-serif;font-size:0.62rem;color:rgba(255,255,255,0.45);margin:0;letter-spacing:0.06em;text-transform:uppercase;}
+        #mobileCard .mc-panel{padding:12px 14px 16px;background:linear-gradient(180deg,rgba(15,20,40,0.7) 0%,rgba(8,12,28,0.85) 100%);backdrop-filter:blur(60px) saturate(180%);-webkit-backdrop-filter:blur(60px) saturate(180%);border-top:0.5px solid rgba(255,255,255,0.1);}
+        #mobileCard .mc-track{width:100%;height:2.5px;background:rgba(255,255,255,0.1);border-radius:99px;overflow:hidden;cursor:pointer;margin-bottom:4px;}
+        #mobileCard .mc-prog{height:100%;width:0%;background:linear-gradient(90deg,rgba(100,160,255,0.8),rgba(180,210,255,0.95));border-radius:99px;transition:width 0.9s linear;box-shadow:0 0 6px rgba(120,180,255,0.4);}
+        #mobileCard .mc-times{display:flex;justify-content:space-between;font-size:0.52rem;color:rgba(255,255,255,0.28);font-family:monospace;letter-spacing:0.04em;margin-bottom:12px;}
+        #mobileCard .mc-ctrl{display:flex;align-items:center;justify-content:center;gap:16px;}
+        #mobileCard button{border:none;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 0.1s,opacity 0.1s;-webkit-tap-highlight-color:transparent;outline:none;}
+        #mobileCard button:active{transform:scale(0.86);opacity:0.55;}
+        #mobileCard .mc-skip{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.07);border:0.5px solid rgba(255,255,255,0.13);box-shadow:0 2px 8px rgba(0,0,0,0.25),inset 0 1px 0 rgba(255,255,255,0.1);color:rgba(255,255,255,0.65);}
+        #mobileCard .mc-play{width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.92);border:0.5px solid rgba(255,255,255,0.5);color:#111;box-shadow:0 6px 20px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,1),inset 0 -1px 0 rgba(0,0,0,0.1);}
+        #mobileCard .mc-play:active{background:rgba(255,255,255,0.65)!important;}
       `;
       document.head.appendChild(st);
 
       function ic(d,w){return '<svg width="'+w+'" height="'+w+'" viewBox="0 0 24 24" fill="currentColor"><path d="'+d+'"/></svg>';}
-      var iPlay  = ic('M8 5v14l11-7z', 20);
-      var iPause = ic('M6 19h4V5H6v14zm8-14v14h4V5h-4z', 20);
-      var iPrev  = ic('M6 6h2v12H6zm3.5 6 8.5 6V6z', 16);
-      var iNext  = ic('M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z', 16);
+      var iPlay  = ic('M8 5v14l11-7z',20);
+      var iPause = ic('M6 19h4V5H6v14zm8-14v14h4V5h-4z',20);
+      var iPrev  = ic('M6 6h2v12H6zm3.5 6 8.5 6V6z',16);
+      var iNext  = ic('M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z',16);
 
       var card = document.createElement('div');
       card.id = 'mobileCard';
@@ -208,60 +141,42 @@
           '<div class="mc-track" id="mcT"><div class="mc-prog" id="mcP"></div></div>'+
           '<div class="mc-times"><span id="mcC">0:00</span><span id="mcD">0:00</span></div>'+
           '<div class="mc-ctrl">'+
-            '<div class="mc-btn-wrap"><button class="mc-skip-btn" id="mcPv">'+iPrev+'</button></div>'+
-            '<div class="mc-btn-wrap"><button class="mc-play-btn" id="mcPl">'+iPlay+'</button></div>'+
-            '<div class="mc-btn-wrap"><button class="mc-skip-btn" id="mcNx">'+iNext+'</button></div>'+
+            '<button class="mc-skip" id="mcPv">'+iPrev+'</button>'+
+            '<button class="mc-play" id="mcPl">'+iPlay+'</button>'+
+            '<button class="mc-skip" id="mcNx">'+iNext+'</button>'+
           '</div>'+
         '</div>';
 
       hero.style.position = 'relative';
       hero.appendChild(card);
 
-      // Audio — bgAudio is now injected before this script
-      function ga(){ return document.getElementById('bgAudio'); }
+      var audio = document.getElementById('bgAudio');
       function fmt(t){t=Math.floor(t||0);return Math.floor(t/60)+':'+(t%60<10?'0':'')+t%60;}
-
       function upd(){
-        var a=ga(); if(!a)return;
-        var p=a.duration?(a.currentTime/a.duration*100):0;
+        if(!audio)return;
+        var p=audio.duration?(audio.currentTime/audio.duration*100):0;
         document.getElementById('mcP').style.width=p.toFixed(1)+'%';
-        document.getElementById('mcC').textContent=fmt(a.currentTime);
-        document.getElementById('mcD').textContent=fmt(a.duration);
-        var on=!a.paused&&!a.muted;
+        document.getElementById('mcC').textContent=fmt(audio.currentTime);
+        document.getElementById('mcD').textContent=fmt(audio.duration);
+        var on=!audio.paused&&!audio.muted;
         document.getElementById('mcPl').innerHTML=on?iPause:iPlay;
       }
-
-      var a = ga();
-      if(a){
-        ['timeupdate','durationchange','play','pause'].forEach(function(ev){
-          a.addEventListener(ev, upd);
-        });
+      if(audio){
+        ['timeupdate','durationchange','play','pause'].forEach(function(ev){audio.addEventListener(ev,upd);});
         upd();
       }
-
-      document.getElementById('mcPl').addEventListener('click', function(e){
-        var a=ga(); if(!a)return;
-        if(a.paused){
-          a.muted=false;
-          if(!a.volume)a.volume=0.42;
-          var p=a.play();if(p&&p.catch)p.catch(function(err){console.error('[MC] play failed:',err);});
-        } else {
-          a.pause();
-        }
+      document.getElementById('mcPl').addEventListener('click',function(){
+        if(!audio)return;
+        if(audio.paused){audio.muted=false;if(!audio.volume)audio.volume=0.42;audio.play().catch(function(err){console.warn('[MC]',err);});}
+        else{audio.pause();}
       });
-      document.getElementById('mcT').addEventListener('click', function(ev){
-        var a=ga(); if(!a||!a.duration)return;
+      document.getElementById('mcT').addEventListener('click',function(ev){
+        if(!audio||!audio.duration)return;
         var r=this.getBoundingClientRect();
-        a.currentTime=((ev.clientX-r.left)/r.width)*a.duration;
+        audio.currentTime=((ev.clientX-r.left)/r.width)*audio.duration;
       });
-      document.getElementById('mcPv').addEventListener('click', function(e){
-        var a=ga(); if(!a)return;
-        a.currentTime=Math.max(0,a.currentTime-10);
-      });
-      document.getElementById('mcNx').addEventListener('click', function(e){
-        var a=ga(); if(!a)return;
-        a.currentTime=Math.min(a.duration||0,a.currentTime+10);
-      });
+      document.getElementById('mcPv').addEventListener('click',function(){if(!audio)return;audio.currentTime=Math.max(0,audio.currentTime-10);});
+      document.getElementById('mcNx').addEventListener('click',function(){if(!audio)return;audio.currentTime=Math.min(audio.duration||0,audio.currentTime+10);});
     }
     window.addEventListener('load',function(){setTimeout(mountCard,400);});
     return;

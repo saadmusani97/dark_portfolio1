@@ -56,6 +56,30 @@
     fadeTimer = setInterval(function() {
   var isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
+  function addMusicBtn() {
+    if (document.getElementById('musicToggleBtn')) return;
+    var b = document.createElement('button');
+    b.id = 'musicToggleBtn';
+    b.style.cssText = 'position:fixed;bottom:1.2rem;left:1.2rem;z-index:9999;width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.06);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);color:rgba(255,255,255,0.7);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.3);';
+    b.innerHTML = '♪';
+    b.addEventListener('click', function() {
+      if (window.__audioCtrl) {
+        window.__audioCtrl.toggle();
+        setTimeout(function() {
+          b.innerHTML = window.__audioCtrl.isPlaying() ? '♪' : '♩';
+          b.style.color = window.__audioCtrl.isPlaying() ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.4)';
+        }, 80);
+      }
+    });
+    var audio = document.getElementById('bgAudio');
+    if (audio) {
+      audio.addEventListener('play',  function() { b.innerHTML='♪'; b.style.color='rgba(255,255,255,0.9)'; });
+      audio.addEventListener('pause', function() { b.innerHTML='♩'; b.style.color='rgba(255,255,255,0.4)'; });
+    }
+    document.body.appendChild(b);
+  }
+  window.addEventListener('load', addMusicBtn);
+
   if (isMobile) {
     function mountCard() {
       var hero = document.getElementById('hero');
@@ -63,227 +87,133 @@
       if (document.getElementById('mobileCard')) return;
 
       var st = document.createElement('style');
-      st.textContent = `
-        #mobileCard {
-          position:absolute;
-          top:36%;left:50%;
-          transform:translate(-50%,-50%);
-          z-index:10;
-          width:clamp(210px,60vw,270px);
-          border-radius:24px;
-          overflow:hidden;
-          box-shadow:
-            0 32px 64px rgba(0,0,0,0.7),
-            0 0 0 0.5px rgba(255,255,255,0.08),
-            inset 0 1px 0 rgba(255,255,255,0.15);
-          animation:mcFloat 6s ease-in-out infinite;
-        }
-        @keyframes mcFloat{
-          0%,100%{transform:translate(-50%,-50%) translateY(0)}
-          50%{transform:translate(-50%,-50%) translateY(-10px)}
-        }
-        /* Cover art with gradient overlay */
-        #mobileCard .mc-art-wrap{
-          position:relative;width:100%;aspect-ratio:1;overflow:hidden;
-        }
-        #mobileCard .mc-art{
-          width:100%;height:100%;object-fit:cover;display:block;
-        }
-        #mobileCard .mc-art-grad{
-          position:absolute;inset:0;
-          background:linear-gradient(
-            180deg,
-            rgba(10,15,30,0) 30%,
-            rgba(10,15,30,0.6) 70%,
-            rgba(10,15,30,0.95) 100%
-          );
-        }
-        #mobileCard .mc-art-info{
-          position:absolute;bottom:12px;left:14px;right:14px;
-        }
-        #mobileCard .mc-title{
-          font-family:-apple-system,'SF Pro Display',sans-serif;
-          font-size:0.9rem;font-weight:700;
-          color:rgba(255,255,255,0.95);
-          margin:0 0 2px;letter-spacing:-0.01em;
-        }
-        #mobileCard .mc-artist{
-          font-family:-apple-system,'SF Pro Text',sans-serif;
-          font-size:0.62rem;color:rgba(255,255,255,0.45);
-          margin:0;letter-spacing:0.06em;text-transform:uppercase;
-        }
-        /* Glass panel */
-        #mobileCard .mc-panel{
-          padding:12px 14px 16px;
-          background:linear-gradient(
-            180deg,
-            rgba(15,20,40,0.7) 0%,
-            rgba(8,12,28,0.85) 100%
-          );
-          backdrop-filter:blur(60px) saturate(180%);
-          -webkit-backdrop-filter:blur(60px) saturate(180%);
-          border-top:0.5px solid rgba(255,255,255,0.1);
-        }
-        /* Progress */
-        #mobileCard .mc-track{
-          width:100%;height:2.5px;
-          background:rgba(255,255,255,0.1);
-          border-radius:99px;overflow:hidden;
-          cursor:pointer;margin-bottom:4px;
-          position:relative;
-        }
-        #mobileCard .mc-prog{
-          height:100%;width:0%;
-          background:linear-gradient(90deg,rgba(100,160,255,0.8),rgba(180,210,255,0.95));
-          border-radius:99px;transition:width 0.9s linear;
-          box-shadow:0 0 6px rgba(120,180,255,0.4);
-        }
-        #mobileCard .mc-times{
-          display:flex;justify-content:space-between;
-          font-size:0.52rem;color:rgba(255,255,255,0.28);
-          font-family:-apple-system,monospace;
-          letter-spacing:0.04em;margin-bottom:12px;
-        }
-        /* Controls */
-        #mobileCard .mc-ctrl{
-          display:flex;align-items:center;
-          justify-content:center;gap:16px;
-        }
-        .mc-btn-wrap{
-          position:relative;
-          -webkit-tap-highlight-color:transparent;
-          cursor:pointer;
-        }
-        .mc-btn-wrap button{
-          border:none;padding:0;cursor:pointer;
-          display:flex;align-items:center;justify-content:center;
-          transition:transform 0.1s, opacity 0.1s;
-          -webkit-tap-highlight-color:transparent;
-          outline:none;
-        }
-        .mc-btn-wrap button:active{transform:scale(0.86);opacity:0.55;}
-        /* Skip buttons - small frosted pill */
-        .mc-skip-btn{
-          width:38px;height:38px;
-          border-radius:50%;
-          background:rgba(255,255,255,0.07);
-          border:0.5px solid rgba(255,255,255,0.13);
-          box-shadow:0 2px 8px rgba(0,0,0,0.25),inset 0 1px 0 rgba(255,255,255,0.1);
-          color:rgba(255,255,255,0.65);
-        }
-        /* Play button - layered glass orb */
-        .mc-play-btn{
-          width:52px;height:52px;
-          border-radius:50%;
-          background:rgba(255,255,255,0.92);
-          border:0.5px solid rgba(255,255,255,0.5);
-          color:#111;
-          box-shadow:
-            0 6px 20px rgba(0,0,0,0.4),
-            0 2px 6px rgba(0,0,0,0.2),
-            inset 0 1px 0 rgba(255,255,255,1),
-            inset 0 -1px 0 rgba(0,0,0,0.1);
-        }
-        .mc-play-btn:active{background:rgba(255,255,255,0.65)!important;}
-      `;
+      st.textContent =
+        '#mobileCard{position:absolute;top:36%;left:50%;transform:translate(-50%,-50%);z-index:10;width:clamp(240px,68vw,300px);border-radius:20px;overflow:hidden;background:#111;box-shadow:0 0 0 1px rgba(255,255,255,0.08),0 24px 48px rgba(0,0,0,0.8);animation:mcFloat 6s ease-in-out infinite;}'
+        +'@keyframes mcFloat{0%,100%{transform:translate(-50%,-50%) translateY(0)}50%{transform:translate(-50%,-50%) translateY(-8px)}}'
+
+        // Art area
+        +'#mobileCard .mc-art{position:relative;width:100%;aspect-ratio:1;overflow:hidden;background:#0a0a0a;}'
+        +'#mobileCard .mc-art img{width:100%;height:100%;object-fit:cover;display:block;}'
+
+        // HUD overlays
+        +'#mobileCard .mc-hud{position:absolute;inset:0;pointer-events:none;}'
+        +'#mobileCard .mc-rec{position:absolute;top:10px;right:12px;display:flex;align-items:center;gap:4px;font-family:"Courier New",monospace;font-size:0.55rem;color:#fff;letter-spacing:0.1em;}'
+        +'#mobileCard .mc-rec-dot{width:6px;height:6px;border-radius:50%;background:#ff3b30;box-shadow:0 0 6px #ff3b30;animation:recBlink 1.2s ease-in-out infinite;}'
+        +'@keyframes recBlink{0%,100%{opacity:1}50%{opacity:0.3}}'
+        +'#mobileCard .mc-coords{position:absolute;top:10px;right:12px;margin-top:18px;font-family:"Courier New",monospace;font-size:0.42rem;color:rgba(255,255,255,0.5);text-align:right;line-height:1.5;margin-top:26px;}'
+        +'#mobileCard .mc-bracket-tl{position:absolute;top:8px;left:10px;font-family:"Courier New",monospace;font-size:0.42rem;color:rgba(255,255,255,0.45);}'
+        +'#mobileCard .mc-bracket-br{position:absolute;bottom:22px;right:12px;font-family:"Courier New",monospace;font-size:0.42rem;color:rgba(255,255,255,0.45);}'
+        +'#mobileCard .mc-binary{position:absolute;bottom:8px;left:0;right:0;font-family:"Courier New",monospace;font-size:0.38rem;color:rgba(255,255,255,0.25);text-align:center;letter-spacing:0.08em;white-space:nowrap;overflow:hidden;}'
+        +'#mobileCard .mc-cross{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:12px;height:12px;opacity:0.3;}'
+        +'#mobileCard .mc-cross::before,#mobileCard .mc-cross::after{content:"";position:absolute;background:rgba(255,255,255,0.8);}'
+        +'#mobileCard .mc-cross::before{width:1px;height:100%;left:50%;transform:translateX(-50%);}'
+        +'#mobileCard .mc-cross::after{height:1px;width:100%;top:50%;transform:translateY(-50%);}'
+
+        // Info panel
+        +'#mobileCard .mc-panel{padding:14px 16px 16px;background:#111;}'
+        +'#mobileCard .mc-titlerow{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}'
+        +'#mobileCard .mc-title{font-family:-apple-system,"SF Pro Display",sans-serif;font-size:1rem;font-weight:700;color:#fff;margin:0;letter-spacing:-0.01em;}'
+        +'#mobileCard .mc-dots{color:rgba(255,255,255,0.4);font-size:1.1rem;letter-spacing:0.15em;cursor:pointer;}'
+
+        // Progress
+        +'#mobileCard .mc-progress{width:100%;height:3px;background:rgba(255,255,255,0.2);border-radius:99px;margin-bottom:6px;cursor:pointer;position:relative;overflow:visible;}'
+        +'#mobileCard .mc-bar{height:100%;background:#fff;border-radius:99px;width:0%;position:relative;transition:width 0.9s linear;}'
+        +'#mobileCard .mc-bar::after{content:"";position:absolute;right:-5px;top:50%;transform:translateY(-50%);width:10px;height:10px;background:#fff;border-radius:50%;box-shadow:0 0 4px rgba(255,255,255,0.5);}'
+        +'#mobileCard .mc-times{display:flex;justify-content:space-between;font-family:-apple-system,monospace;font-size:0.6rem;color:rgba(255,255,255,0.5);margin-bottom:14px;}'
+
+        // Controls
+        +'#mobileCard .mc-ctrl{display:flex;align-items:center;justify-content:center;gap:24px;}'
+        +'#mobileCard .mc-ctrl button{border:none;background:none;cursor:pointer;color:#fff;padding:4px;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;transition:opacity 0.1s,transform 0.1s;}'
+        +'#mobileCard .mc-ctrl button:active{opacity:0.4;transform:scale(0.88);}';
+
       document.head.appendChild(st);
 
-      function ic(d,w){return '<svg width="'+w+'" height="'+w+'" viewBox="0 0 24 24" fill="currentColor"><path d="'+d+'"/></svg>';}
-      var iPlay  = ic('M8 5v14l11-7z', 20);
-      var iPause = ic('M6 19h4V5H6v14zm8-14v14h4V5h-4z', 20);
-      var iPrev  = ic('M6 6h2v12H6zm3.5 6 8.5 6V6z', 16);
-      var iNext  = ic('M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z', 16);
+      function ic(d, w) { return '<svg width="'+w+'" height="'+w+'" viewBox="0 0 24 24" fill="currentColor"><path d="'+d+'"/></svg>'; }
+      var iPlay   = ic('M8 5v14l11-7z', 26);
+      var iPause  = ic('M6 19h4V5H6v14zm8-14v14h4V5h-4z', 26);
+      var iRew    = ic('M6 6h2v12H6zm3.5 6 8.5 6V6z', 22);
+      var iFwd    = ic('M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z', 22);
 
       var card = document.createElement('div');
       card.id = 'mobileCard';
       card.innerHTML =
-        '<div class="mc-art-wrap">'+
-          '<img class="mc-art" src="/psp/works/saad-main.jpg" alt=""/>'+
-          '<div class="mc-art-grad"></div>'+
-          '<div class="mc-art-info">'+
-            '<p class="mc-title">Saad Musani</p>'+
-            '<p class="mc-artist">Design · Build</p>'+
-          '</div>'+
-        '</div>'+
-        '<div class="mc-panel">'+
-          '<div class="mc-track" id="mcT"><div class="mc-prog" id="mcP"></div></div>'+
-          '<div class="mc-times"><span id="mcC">0:00</span><span id="mcD">0:00</span></div>'+
-          '<div class="mc-ctrl">'+
-            '<div class="mc-btn-wrap"><button class="mc-skip-btn" id="mcPv">'+iPrev+'</button></div>'+
-            '<div class="mc-btn-wrap"><button class="mc-play-btn" id="mcPl">'+iPlay+'</button></div>'+
-            '<div class="mc-btn-wrap"><button class="mc-skip-btn" id="mcNx">'+iNext+'</button></div>'+
-          '</div>'+
-        '</div>';
+        '<div class="mc-art">'
+          + '<img src="/psp/works/saad-main.jpg" alt="Saad Musani"/>'
+          + '<div class="mc-hud">'
+            + '<div class="mc-rec"><div class="mc-rec-dot"></div>REC</div>'
+            + '<div class="mc-coords">19.0760° N<br>72.8777° E</div>'
+            + '<div class="mc-bracket-tl">[ 01 ]</div>'
+            + '<div class="mc-bracket-br">[ 02 ]</div>'
+            + '<div class="mc-binary">01100100 01100001 01110010 01101011 01110010 01101111 01101111 01101101</div>'
+            + '<div class="mc-cross"></div>'
+          + '</div>'
+        + '</div>'
+        + '<div class="mc-panel">'
+          + '<div class="mc-titlerow">'
+            + '<p class="mc-title">Creative Agentic Dev</p>'
+            + '<span class="mc-dots">···</span>'
+          + '</div>'
+          + '<div class="mc-progress" id="mcProg"><div class="mc-bar" id="mcBar"></div></div>'
+          + '<div class="mc-times"><span id="mcCur">0:00</span><span id="mcRem">-0:00</span></div>'
+          + '<div class="mc-ctrl">'
+            + '<button id="mcRew" aria-label="Rewind">'+iRew+'</button>'
+            + '<button id="mcPlay" aria-label="Play">'+iPlay+'</button>'
+            + '<button id="mcFwd" aria-label="Forward">'+iFwd+'</button>'
+          + '</div>'
+        + '</div>';
 
       hero.style.position = 'relative';
       hero.appendChild(card);
 
-      // Audio — bgAudio is now injected before this script
-      function ga(){ return document.getElementById('bgAudio'); }
-      function fmt(t){t=Math.floor(t||0);return Math.floor(t/60)+':'+(t%60<10?'0':'')+t%60;}
-
-      function upd(){
-        var a=ga(); if(!a)return;
-        var p=a.duration?(a.currentTime/a.duration*100):0;
-        document.getElementById('mcP').style.width=p.toFixed(1)+'%';
-        document.getElementById('mcC').textContent=fmt(a.currentTime);
-        document.getElementById('mcD').textContent=fmt(a.duration);
-        var on=!a.paused&&!a.muted;
-        document.getElementById('mcPl').innerHTML=on?iPause:iPlay;
+      var audio = document.getElementById('bgAudio');
+      function fmt(t) { t=Math.floor(t||0); return Math.floor(t/60)+':'+(t%60<10?'0':'')+t%60; }
+      function upd() {
+        if (!audio) return;
+        var p = audio.duration ? (audio.currentTime/audio.duration*100) : 0;
+        document.getElementById('mcBar').style.width = p.toFixed(1)+'%';
+        document.getElementById('mcCur').textContent = fmt(audio.currentTime);
+        var rem = (audio.duration||0) - (audio.currentTime||0);
+        document.getElementById('mcRem').textContent = '-'+fmt(rem);
+        var on = !audio.paused && !audio.muted;
+        document.getElementById('mcPlay').innerHTML = on ? iPause : iPlay;
       }
-
-      var a = ga();
-      if(a){
-        ['timeupdate','durationchange','play','pause'].forEach(function(ev){
-          a.addEventListener(ev, upd);
-        });
+      if (audio) {
+        ['timeupdate','durationchange','play','pause'].forEach(function(ev) { audio.addEventListener(ev, upd); });
         upd();
       }
-
-      document.getElementById('mcPl').addEventListener('click', function(e){
-        var a=ga(); if(!a)return;
-        if(a.paused){
-          a.muted=false;
-          if(!a.volume)a.volume=0.42;
-          var p=a.play();if(p&&p.catch)p.catch(function(err){console.error('[MC] play failed:',err);});
-        } else {
-          a.pause();
-        }
+      document.getElementById('mcPlay').addEventListener('click', function() {
+        if (!audio) return;
+        if (audio.paused) { audio.muted=false; if(!audio.volume) audio.volume=0.42; audio.play().catch(function(){}); }
+        else { audio.pause(); }
       });
-      document.getElementById('mcT').addEventListener('click', function(ev){
-        var a=ga(); if(!a||!a.duration)return;
-        var r=this.getBoundingClientRect();
-        a.currentTime=((ev.clientX-r.left)/r.width)*a.duration;
+      document.getElementById('mcProg').addEventListener('click', function(ev) {
+        if (!audio||!audio.duration) return;
+        var r = this.getBoundingClientRect();
+        audio.currentTime = ((ev.clientX-r.left)/r.width)*audio.duration;
       });
-      document.getElementById('mcPv').addEventListener('click', function(e){
-        var a=ga(); if(!a)return;
-        a.currentTime=Math.max(0,a.currentTime-10);
-      });
-      document.getElementById('mcNx').addEventListener('click', function(e){
-        var a=ga(); if(!a)return;
-        a.currentTime=Math.min(a.duration||0,a.currentTime+10);
-      });
+      document.getElementById('mcRew').addEventListener('click', function() { if(audio) audio.currentTime=Math.max(0,audio.currentTime-10); });
+      document.getElementById('mcFwd').addEventListener('click', function() { if(audio) audio.currentTime=Math.min(audio.duration||0,audio.currentTime+10); });
     }
-    window.addEventListener('load',function(){setTimeout(mountCard,400);});
+    window.addEventListener('load', function() { setTimeout(mountCard, 400); });
     return;
   }
 
   // Desktop: PSP
-  var TRIES=0;
-  function mount(){
-    TRIES++;if(TRIES>100)return;
-    var hero=document.getElementById('hero');
-    if(!hero){setTimeout(mount,150);return;}
-    if(document.getElementById('pspCanvas'))return;
-    var ov=document.createElement('div');
-    ov.id='pspFixed';
-    ov.style.cssText='position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);z-index:10;width:clamp(560px,72vw,1000px);display:flex;flex-direction:column;align-items:center;gap:0.5rem;pointer-events:auto;';
-    ov.innerHTML='<div style="position:relative;width:100%;aspect-ratio:16/10;cursor:grab"><canvas id="pspCanvas" style="display:block;width:100%!important;height:100%!important;border-radius:6px;touch-action:none;"></canvas></div><div id="pspRail" class="psp__rail" style="width:100%;box-sizing:border-box"><b id="pspRailIdx">01</b><i id="pspRailTot">/01</i><a class="psp__railOpen" id="pspRailOpen" href="#" target="_blank" rel="noopener">↗</a></div>';
-    hero.style.position='relative';
+  var TRIES = 0;
+  function mount() {
+    TRIES++; if(TRIES>100)return;
+    var hero = document.getElementById('hero');
+    if (!hero) { setTimeout(mount,150); return; }
+    if (document.getElementById('pspCanvas')) return;
+    var ov = document.createElement('div');
+    ov.id = 'pspFixed';
+    ov.style.cssText = 'position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);z-index:10;width:clamp(560px,72vw,1000px);display:flex;flex-direction:column;align-items:center;gap:0.5rem;pointer-events:auto;';
+    ov.innerHTML = '<div style="position:relative;width:100%;aspect-ratio:16/10;cursor:grab"><canvas id="pspCanvas" style="display:block;width:100%!important;height:100%!important;border-radius:6px;touch-action:none;"></canvas></div><div id="pspRail" class="psp__rail" style="width:100%;box-sizing:border-box"><b id="pspRailIdx">01</b><i id="pspRailTot">/01</i><a class="psp__railOpen" id="pspRailOpen" href="#" target="_blank" rel="noopener">↗</a></div>';
+    hero.style.position = 'relative';
     hero.appendChild(ov);
     console.log('[PSP] mounted ✓');
   }
-  window.addEventListener('load',function(){setTimeout(mount,500);});
+  window.addEventListener('load', function() { setTimeout(mount, 500); });
 })();
 </script>
 <script src="/liquid-glass/displacement-utils.js"></script>

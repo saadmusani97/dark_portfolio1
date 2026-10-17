@@ -11,7 +11,7 @@ window.SK_WORKS = [
     kind: 'IDENTITY',
     year: '2026',
     meta: 'AI · DESIGN · BUILD',
-    img: 'psp/works/saad-main.jpg',
+    img: '/psp/works/saad-main.jpg',
     link: 'https://www.instagram.com/saad_musani_7/',
     vertical: false,
     featured: true
@@ -23,7 +23,7 @@ window.SK_WORKS = [
     kind: 'ART',
     year: '2026',
     meta: '',
-    img: 'psp/works/skeleton_.png',
+    img: '/psp/works/skeleton_.png',
     link: '#',
     vertical: false,
     featured: false

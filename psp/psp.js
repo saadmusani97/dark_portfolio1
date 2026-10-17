@@ -196,7 +196,7 @@ function init() {
   gltfLoader.setDRACOLoader(dracoLoader);
 
   gltfLoader.load(
-    'psp/models/psp.glb',
+    '/psp/models/psp.glb',
     (gltf) => { setup(gltf.scene); },
     undefined,
     (err) => {
